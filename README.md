@@ -11,12 +11,15 @@ This project implements an attendance automation system using face detection. Th
 ## Requirements
 Ensure you have the following dependencies installed:
 
+### In windows machines download Visual Studio with Development in C++ to successfully install these libraries .
+
 * firebase-admin==5.0.1
 * opencv-python==4.5.3
 * cvzone==1.5.3
 * face-recognition==1.3.0
 * numpy==1.21.2
 * Pillow==8.3.2
+
 
 You can install them using:
 
