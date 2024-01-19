@@ -10,8 +10,8 @@ from firebase_admin import db
 from firebase_admin import storage
 from datetime import datetime
 
-cred = credentials.Certificate("Enter path of your private key here")
-firebase_admin.initialize_app(cred,{"databaseURL":"Enter path of your realtime Database here","storageBucket":"Enter path of your storage bucket here"})
+cred = credentials.Certificate("student-s-database-a27c7-firebase-adminsdk-724xg-05c9077de8.json")
+firebase_admin.initialize_app(cred,{"databaseURL":"https://student-s-database-a27c7-default-rtdb.firebaseio.com/","storageBucket":"student-s-database-a27c7.appspot.com"})
 
 bucket=storage.bucket()
 
@@ -78,6 +78,7 @@ while True:
                 y1,x2,y2,x1=y1*4,x2*4,y2*4,x1*4
                 bbox=55+x1,162+y1,x2-x1,y2-y1
                 backImage=cvzone.cornerRect(backImage,bbox,rt=0)
+                #ID of student whose match is found
                 id=studentId[matchIndex]
                 if counter==0:
                     cvzone.putTextRect(backImage,"Loading",(275,400))
@@ -86,53 +87,57 @@ while True:
                     counter=1
                     modeCounter=2
                     
-            if counter!=0:
-                
-                if counter==1:
-                    studentInfo=db.reference(f"Students/{id}").get()
-                    print(studentInfo)
-                    #Getting profile images of student
-                    blob=bucket.get_blob(f"Images/{id}.png")
-                    array=np.frombuffer(blob.download_as_string(),np.uint8)
-                    studentImage=cv.imdecode(array,cv.COLOR_BGRA2BGR)
-                    #Update attendance
-                    datetimeObject=datetime.strptime(studentInfo["last_attendance_time"],"%Y-%m-%d %H:%M:%S")
-                    elaspedSeconds=(datetime.now()-datetimeObject).total_seconds()
-                    if elaspedSeconds>86400:
-                        ref=db.reference(f"Students/{id}")
-                        studentInfo["total_attendance"]+=1
-                        ref.child("total_attendance").set(studentInfo["total_attendance"])
-                        ref.child("last_attendance_time").set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                    else:
-                        modeCounter=1
-                        counter=0
-                        backImage[44:44+633,808:808+414]=modeList[modeCounter]
-                if modeCounter!=1:
-                    if 10<counter<20:
-                        modeCounter=3
-                        
+        if counter!=0:
+            
+            #We are downloading only in the first frame .
+            if counter==1:
+                studentInfo=db.reference(f"Students/{id}").get()
+                print(studentInfo)
+                #Getting profile images of student
+                blob=bucket.get_blob(f"Images/{id}.png")
+                array=np.frombuffer(blob.download_as_string(),np.uint8)
+                studentImage=cv.imdecode(array,cv.COLOR_BGRA2BGR)
+                #Update attendance
+                datetimeObject=datetime.strptime(studentInfo["last_attendance_time"],"%Y-%m-%d %H:%M:%S")
+                elaspedSeconds=(datetime.now()-datetimeObject).total_seconds()
+                if elaspedSeconds>30:
+                    ref=db.reference(f"Students/{id}")
+                    studentInfo["total_attendance"]+=1
+                    ref.child("total_attendance").set(studentInfo["total_attendance"])
+                    ref.child("last_attendance_time").set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                else:
+                    modeCounter=1
+                    counter=0
                     backImage[44:44+633,808:808+414]=modeList[modeCounter]
-                    if counter<=10:    
-                        cv.putText(backImage,str(studentInfo["total_attendance"]),(861,125),cv.FONT_HERSHEY_COMPLEX_SMALL,1,(255,255,255))
-                            
-                        cv.putText(backImage,str(studentInfo["course"]),(1006,550),cv.FONT_HERSHEY_COMPLEX_SMALL,0.7,(255,255,255))    
-                        cv.putText(backImage,str(id),(1006,493),cv.FONT_HERSHEY_COMPLEX_SMALL,0.7,(255,255,255))
-                        cv.putText(backImage,str(studentInfo["grade"]),(910,625),cv.FONT_HERSHEY_COMPLEX,0.6,(100,100,100))
-                        cv.putText(backImage,str(studentInfo["year"]),(1025,625),cv.FONT_HERSHEY_COMPLEX,0.6,(100,100,100))
-                        cv.putText(backImage,str(studentInfo["start_year"]),(1125,625),cv.FONT_HERSHEY_COMPLEX,0.6,(100,100,100.6))
-                        (w,h),_=cv.getTextSize(studentInfo["name"],cv.FONT_HERSHEY_COMPLEX,1,1)
-                        offset=(414-w)//2
-                        cv.putText(backImage,str(studentInfo["name"]),(808+offset,445),cv.FONT_HERSHEY_COMPLEX,1,(50,50,50))    
-                        backImage[175:175+216,909:909+216]=studentImage
+            # Only displays details if student is not already marked
+            if modeCounter!=1:
+                if 10<counter<20:
+                    modeCounter=3
+                    
+                backImage[44:44+633,808:808+414]=modeList[modeCounter]
+                if counter<=10:    
+                    cv.putText(backImage,str(studentInfo["total_attendance"]),(861,125),cv.FONT_HERSHEY_COMPLEX_SMALL,1,(255,255,255))
+                        
+                    cv.putText(backImage,str(studentInfo["course"]),(1006,550),cv.FONT_HERSHEY_COMPLEX_SMALL,0.7,(255,255,255))    
+                    cv.putText(backImage,str(id),(1006,493),cv.FONT_HERSHEY_COMPLEX_SMALL,0.7,(255,255,255))
+                    cv.putText(backImage,str(studentInfo["grade"]),(910,625),cv.FONT_HERSHEY_COMPLEX,0.6,(100,100,100))
+                    cv.putText(backImage,str(studentInfo["year"]),(1025,625),cv.FONT_HERSHEY_COMPLEX,0.6,(100,100,100))
+                    cv.putText(backImage,str(studentInfo["start_year"]),(1125,625),cv.FONT_HERSHEY_COMPLEX,0.6,(100,100,100.6))
+                    (w,h),_=cv.getTextSize(studentInfo["name"],cv.FONT_HERSHEY_COMPLEX,1,1)
+                    offset=(414-w)//2
+                    cv.putText(backImage,str(studentInfo["name"]),(808+offset,445),cv.FONT_HERSHEY_COMPLEX,1,(50,50,50))    
+                    backImage[175:175+216,909:909+216]=studentImage
                 counter+=1
-                
+            
+            #If above one wrong frame (extra frame)
                 if counter>=20:
                     counter=0
                     modeCounter=0
                     studentInfo=[]
                     studentImage=[]
                     backImage[44:44+633,808:808+414]=modeList[modeCounter]
-    
+
+    #If no face in frame show active
     else:
         modeCounter=0
         counter=0               
@@ -143,3 +148,6 @@ while True:
     
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
+
+cap.release()
+cv.destroyAllWindows()
