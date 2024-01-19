@@ -98,7 +98,7 @@ while True:
                     #Update attendance
                     datetimeObject=datetime.strptime(studentInfo["last_attendance_time"],"%Y-%m-%d %H:%M:%S")
                     elaspedSeconds=(datetime.now()-datetimeObject).total_seconds()
-                    if elaspedSeconds>30:
+                    if elaspedSeconds>86400:
                         ref=db.reference(f"Students/{id}")
                         studentInfo["total_attendance"]+=1
                         ref.child("total_attendance").set(studentInfo["total_attendance"])
