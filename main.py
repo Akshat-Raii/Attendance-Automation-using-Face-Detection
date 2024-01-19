@@ -10,8 +10,8 @@ from firebase_admin import db
 from firebase_admin import storage
 from datetime import datetime
 
-cred = credentials.Certificate("student-s-database-a27c7-firebase-adminsdk-724xg-05c9077de8.json")
-firebase_admin.initialize_app(cred,{"databaseURL":"https://student-s-database-a27c7-default-rtdb.firebaseio.com/","storageBucket":"student-s-database-a27c7.appspot.com"})
+cred = credentials.Certificate("Enter path of your private key here")
+firebase_admin.initialize_app(cred,{"databaseURL":"Enter path of your realtime Database here","storageBucket":"Enter path of your storage bucket here"})
 
 bucket=storage.bucket()
 
